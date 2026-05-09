@@ -1,116 +1,82 @@
 # Incident Report — Scenario 2: Network Port Scan Detection
 
 **Analyst:** Andy Dela Quarshie Wright  
-**Date:** [ADD DATE YOU RAN THIS]  
+**Date:** May 8, 2025  
 **Severity:** Medium  
 **Status:** Detected & Documented  
-**MITRE ATT&CK Technique:** T1046 — Network Service Discovery
+**MITRE ATT&CK:** T1046 — Network Service Discovery
 
 ---
 
 ## Objective
 
-Simulate a network reconnaissance port scan using Nmap against localhost, capture the traffic with Wireshark, and detect the scanning activity in Splunk using traffic volume thresholds.
+Detect automated port scanning activity against an internal server and identify which services were exposed to the attacker.
 
 ---
 
-## Attack Simulation
+## Log Source
 
-**Step 1 — Start Wireshark capture:**
-- Open Wireshark
-- Select your loopback interface (`lo0` on macOS)
-- Start capture
+Realistic UFW firewall log simulating an Nmap port scan from an external attacker against wright-server (10.0.0.5). Mixed scan techniques — SYN, NULL, FIN, XMAS flags across TCP and UDP.
 
-**Step 2 — Run Nmap scan from Terminal:**
-
-```bash
-nmap -sV -p 1-1000 127.0.0.1
-```
-
-**What this does:**
-- Scans ports 1–1000 on localhost
-- `-sV` detects service versions on open ports
-- Generates a high volume of connection attempts in a short time — characteristic of port scanning
-
-**Step 3 — Stop Wireshark and export:**
-- Stop the capture
-- File → Export → Save as `portscan_capture.pcap`
-- Upload `.pcap` to Splunk: **Settings → Add Data → Upload**
+**Uploaded to:** Splunk Cloud — sourcetype: syslog
 
 ---
 
-## Logs Generated
+## Sample Log Events
+---
 
-**Log source:** Wireshark pcap + system logs  
-**Sourcetype in Splunk:** `pcap` / `syslog`  
-**Key fields observed:**
-- `dest_port` — destination port being probed
-- `src_ip` — scanning source
-- `count` — number of connection attempts per port
+## SPL Detection Queries
 
-**Sample raw log entry:**
-```
-[ADD YOUR RAW LOG LINE FROM SPLUNK HERE]
-```
+**Detect high port volume from single source:**
+**Results:**
+194.165.16.73 — 52 ports scanned
+
+**Detailed port breakdown:**
+---
+
+## Alert
+
+- **Name:** Port_Scan_Detection
+- **Trigger:** Number of results > 10
+- **Severity:** High
 
 ---
 
-## SPL Detection Query
+## High-Value Ports Identified
 
-```splunk
-index=main
-| stats count by dest_port, src_ip
-| where count > 20
-| sort -count
-```
-
-**Query breakdown:**
-- Groups traffic by destination port and source IP
-- Flags any source hitting more than 20 unique ports — indicates scanning behaviour
-- Sorted by volume to surface highest-risk sources first
-
----
-
-## Alert Configuration
-
-- **Alert name:** Port_Scan_Detection
-- **Trigger condition:** Unique dest_port count > 20 from single src_ip within 2 minutes
-- **Alert action:** Log to Splunk triggered alerts list
-
-> 📸 **[INSERT SCREENSHOT — Nmap scan results in terminal]**  
-> 📸 **[INSERT SCREENSHOT — Splunk alert triggered / search results]**  
-> 📸 **[INSERT SCREENSHOT — Wireshark pcap showing scan traffic]**
+- Port 22 (SSH) — Remote access, brute force target
+- Port 445 (SMB) — Ransomware, EternalBlue exploitation
+- Port 3389 (RDP) — Remote desktop, credential attacks
+- Port 3306 (MySQL) — Database access, data exfiltration
+- Port 80/443 (HTTP/HTTPS) — Web application vulnerabilities
+- Port 23 (Telnet) — Unencrypted, credential interception risk
 
 ---
 
 ## Findings
 
-| Field | Value |
-|-------|-------|
-| Source IP | 127.0.0.1 |
-| Ports scanned | 1–1000 |
-| Open ports found | [ADD WHAT NMAP RETURNED] |
-| Scan duration | [ADD TIME] |
-| True Positive? | Yes |
+- 194.165.16.73 probed 52 ports in under 30 seconds — automated scan
+- Mixed scan flags (NULL, XMAS, FIN) used to evade basic IDS detection
+- Port 22 returned SYN-ACK — SSH service exposed and reachable
+- Port 443 returned SYN-ACK — HTTPS service exposed
+- Pattern consistent with Nmap aggressive reconnaissance
 
 ---
 
-## Analyst Notes
+## Analyst Response
 
-The detection query flagged the scanning activity based on the high volume of unique destination ports contacted by a single source. In a real SOC environment:
-
-1. **Identify** if the scanning IP is internal or external
-2. **Check** asset inventory — is this an authorised vulnerability scan?
-3. **If unauthorised** — escalate immediately, isolate source if possible
-4. **Review** what services/ports were discovered and assess exposure
-
-**IOC extracted:**
-- Source IP: 127.0.0.1 (lab simulation)
-- Scan type: SYN/version scan (Nmap -sV)
-- Port range: 1–1000
+1. Verify — is 194.165.16.73 an authorised vulnerability scanner?
+2. If not authorised — block at perimeter firewall immediately
+3. Cross-reference on VirusTotal, Shodan, AbuseIPDB
+4. Alert infrastructure team — SSH and SMB exposure needs review
+5. Restrict SSH to VPN/jumpbox — not exposed to public internet
+6. Monitor for follow-up exploit attempts from same IP range
 
 ---
 
-## Conclusion
+## IOCs
 
-Network port scan successfully simulated using Nmap and detected in Splunk via traffic volume thresholds. Wireshark pcap corroborated the alert, demonstrating multi-tool SOC investigation workflow.
+- Attacker IP: 194.165.16.73
+- Scan type: Full port scan — SYN, NULL, FIN, XMAS
+- Ports scanned: 52 including 22, 445, 3389, 3306
+- Duration: Under 30 seconds

@@ -1,64 +1,67 @@
-# Splunk Setup Guide (macOS)
+# Splunk Setup Guide
 
-## Step 1 — Download Splunk Enterprise
+## Environment Used
 
-1. Go to: https://www.splunk.com/en_us/download/splunk-enterprise.html
-2. Create a free Splunk account
-3. Download the macOS `.dmg` file
-4. Open the `.dmg` and drag Splunk to your Applications folder
-5. Open Terminal and start Splunk:
-
-```bash
-cd /Applications/Splunk/bin
-./splunk start --accept-license
-```
-
-6. Open your browser and go to: `http://localhost:8000`
-7. Log in with the admin credentials you set during install
+This lab was built using Splunk Cloud (free trial) — no local installation required.
 
 ---
 
-## Step 2 — Download Splunk Universal Forwarder
+## Step 1 — Create a Free Splunk Account
 
-1. Go to: https://www.splunk.com/en_us/download/universal-forwarder.html
-2. Download macOS version
-3. Install it — it runs silently in the background
-4. Configure it to forward `/var/log/` to your local Splunk instance:
-
-```bash
-cd /Applications/SplunkUniversalForwarder/bin
-
-./splunk add forward-server localhost:9997
-
-./splunk add monitor /var/log/
-```
+1. Go to: https://www.splunk.com
+2. Click Products → Free Trials & Downloads
+3. Select Splunk Cloud → Start Free Trial
+4. Fill in your details and verify your email
+5. Log in — Splunk Cloud opens in your browser
 
 ---
 
-## Step 3 — Add Data Inputs in Splunk
+## Step 2 — Upload Log Data
 
-1. In Splunk web UI → **Settings → Data Inputs**
-2. Add **Files & Directories**
-3. Point to `/var/log/`
-4. Set sourcetype to `syslog`
-5. Save
+Logs were uploaded directly into Splunk Cloud:
 
----
-
-## Step 4 — Verify Logs Are Coming In
-
-In the Splunk search bar, run:
-
-```splunk
-index=main | head 20
-```
-
-If you see log events — your setup is working. ✅
+1. Settings → Add Data → Upload
+2. Select your log file from your Desktop
+3. Set the sourcetype:
+   - Auth logs → syslog
+   - Firewall logs → syslog
+   - Malware/audit logs → malware_activity_log
+4. Index → Default
+5. Click Review → Submit
 
 ---
 
-## Step 5 — Create Your Index (Optional but Recommended)
+## Step 3 — Verify Data Ingestion
 
-1. Settings → Indexes → New Index
-2. Name it: `soc_lab`
-3. Use `index=soc_lab` in your searches for cleaner results
+In Search and Reporting, run:
+If events appear — data is ingested correctly.
+
+---
+
+## Step 4 — Run Searches
+
+Go to Apps → Search and Reporting and use the SPL queries in detections/spl-queries.md
+
+Set time range to All time for lab data.
+
+---
+
+## Step 5 — Create Alerts
+
+After running a detection query:
+1. Click Save As → Alert
+2. Set title, trigger condition, and severity
+3. Add action: Add to Triggered Alerts
+4. Save
+
+View saved alerts under Activity → Triggered Alerts
+
+---
+
+## Log Files Generated
+
+All log files were generated using Python scripts on macOS:
+
+- auth_brute_force.log — Brute Force — syslog
+- portscan.log — Port Scan — syslog
+- malware_activity.log — Malware/C2 — malware_activity_log
