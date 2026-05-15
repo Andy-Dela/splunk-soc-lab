@@ -28,8 +28,7 @@ Realistic UFW firewall log simulating an Nmap port scan from an external attacke
 ## SPL Detection Queries
 
 **Detect high port volume from single source:**
-**Results:**
-194.165.16.73 — 52 ports scanned
+**Results:** 194.165.16.73 — 52 ports scanned
 
 **Detailed port breakdown:**
 ---
