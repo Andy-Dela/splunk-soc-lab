@@ -21,19 +21,18 @@ Home SIEM lab built using Splunk Cloud to simulate and detect real-world threats
 | 3 | Malware, C2 Beaconing & Exfiltration | 185.220.101.48 / 194.165.16.73 | Critical | T1059, T1053, T1136, T1041, T1003 |
 
 ---
+## Full SOC Incident Report
 
+Full structured report with screenshots and analyst findings:  
+[Andy_Wright_SOC_Incident_Report_v2.pdf](reports/Andy_Wright_SOC_Incident_Report_v2.pdf)
+
+—
 ## Incident Reports
 
 - [Scenario 1 — Brute Force Detection](scenarios/brute-force.md)
 - [Scenario 2 — Network Port Scan Detection](scenarios/network-scan.md)
 - [Scenario 3 — Malware, C2 & Exfiltration](scenarios/malware-simulation.md)
 
----
-
-## Full SOC Incident Report
-
-Full structured report with screenshots and analyst findings:  
-[Andy_Wright_SOC_Incident_Report_v2.pdf](reports/Andy_Wright_SOC_Incident_Report_v2.pdf)
 
 ---
 
